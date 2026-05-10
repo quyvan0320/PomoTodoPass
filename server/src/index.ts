@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { errorHandler } from "./middlewares/errorHandler";
 import authRoutes from '@/routes/auth.route'
+import passRoutes from '@/routes/pass.route'
 
 const app = express();
 const PORT = process.env.PORT;
@@ -15,6 +16,7 @@ app.get("/health", (req, res) =>
 );
 
 app.use('/api/auth',   authRoutes)
+app.use('/api/pass',   passRoutes)
 
 app.use(errorHandler);
 

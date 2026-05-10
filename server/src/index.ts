@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { errorHandler } from "./middlewares/errorHandler";
+import authRoutes from '@/routes/auth.route'
 
 const app = express();
 const PORT = process.env.PORT;
@@ -13,7 +14,9 @@ app.get("/health", (req, res) =>
   res.json({ status: true, ts: new Date().toISOString() }),
 );
 
-app.use(errorHandler)
+app.use('/api/auth',   authRoutes)
+
+app.use(errorHandler);
 
 app.listen(PORT, () =>
   console.log(`Server running → http://localhost:${PORT}`),

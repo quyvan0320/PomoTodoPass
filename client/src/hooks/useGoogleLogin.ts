@@ -1,11 +1,14 @@
 import { signInWithPopup, signOut } from "firebase/auth";
-import { auth, googleProvider } from '@/lib/firebase'
-
+import { auth, googleProvider } from "@/lib/firebase";
 
 export function useGoogleLogin() {
   const login = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+
+      const token = await result.user.getIdToken();
+
+      console.log("ID Token:", token);
     } catch (error) {
       console.error("Login failed:", error);
     }

@@ -5,9 +5,9 @@ import React from "react";
 const LoginPage = () => {
   const { login } = useGoogleLogin();
   const { user } = useAuth();
-
+  console.log(user)
   if (user) {
-    return <div>Xin chào {user.displayName}! ✅</div>;
+    return <div>Xin chào ! ✅</div>;
   }
 
   return (

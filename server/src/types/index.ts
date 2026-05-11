@@ -27,10 +27,16 @@ export interface CreatePassBody {
 }
 
 // pts with lv
-export const POINTS_MAP: Record<'EASY' | 'MEDIUM' | 'HARD', number> = {
+export const POINTS_MAP: Record<"EASY" | "MEDIUM" | "HARD", number> = {
   EASY: 5,
   MEDIUM: 7,
   HARD: 10,
+};
+
+export interface UpdateTaskContent {
+  title?: string;
+  difficulty?: "EASY" | "MEDIUM" | "HARD";
+  order?: number;
 }
 
 export const COMPLETION_BONUS = 20; // bonus pts when finish 100%

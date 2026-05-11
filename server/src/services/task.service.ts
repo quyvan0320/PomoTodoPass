@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/middlewares/errorHandler";
-import { COMPLETION_BONUS, DEBUFF_RATE, STREAK_MULTIPLIER, STREAK_THRESHOLD } from "@/types";
+import {
+  COMPLETION_BONUS,
+  DEBUFF_RATE,
+  POINTS_MAP,
+  STREAK_MULTIPLIER,
+  STREAK_THRESHOLD,
+  UpdateTaskContent,
+} from "@/types";
 
 export const taskService = {
   // check task own user
@@ -155,5 +162,33 @@ export const taskService = {
         newTotal: updatedUser.totalTimepoints,
       };
     });
+  },
+
+   async updateTask(
+    taskId: string,
+    userId: string,
+    data: { title?: string; difficulty?: "EASY" | "MEDIUM" | "HARD"; order?: number }
+  ) {
+    const task = await taskService.getOwnedTask(taskId, userId);
+    if (task.status !== "PENDING") throw new AppError("Chỉ sửa được task PENDING", 400);
+ 
+    return prisma.task.update({
+      where: { id: taskId },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.difficulty && {
+          difficulty: data.difficulty,
+          basePoints: POINTS_MAP[data.difficulty],
+        }),
+        ...(data.order !== undefined && { order: data.order }),
+      },
+    });
+  },
+ 
+  // ─── Xóa task ──────────────────────────────────────────────────────────────
+  async deleteTask(taskId: string, userId: string) {
+    const task = await taskService.getOwnedTask(taskId, userId);
+    if (task.status !== "PENDING") throw new AppError("Chỉ xóa được task PENDING", 400);
+    await prisma.task.delete({ where: { id: taskId } });
   },
 };

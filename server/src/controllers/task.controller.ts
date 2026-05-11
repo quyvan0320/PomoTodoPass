@@ -39,4 +39,32 @@ export const taskController = {
       next(error);
     }
   },
+
+  async update(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const taskId: string = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const userId = req.user!.id;
+
+      const updated = await taskService.updateTask(taskId, userId, req.body);
+      res.status(200).json({ success: true, data: updated });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async remove(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const taskId: string = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const userId = req.user!.id;
+
+      await taskService.deleteTask(taskId, userId);
+      res.status(200).json({ success: true, message: "Task deleted!" });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

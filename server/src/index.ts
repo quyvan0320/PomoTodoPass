@@ -16,7 +16,7 @@ app.get("/health", (req, res) =>
 );
 
 app.use('/api/auth',   authRoutes)
-app.use('/api/pass',   passRoutes)
+app.use('/api/passes',   passRoutes)
 
 app.use(errorHandler);
 

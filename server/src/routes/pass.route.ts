@@ -5,5 +5,6 @@ import { Router } from "express";
 const router = Router();
 
 router.get("/today", authenticate, passController.getToday);
+router.post("/", authenticate, passController.create);
 
 export default router;

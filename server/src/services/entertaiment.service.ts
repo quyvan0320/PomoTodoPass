@@ -40,7 +40,26 @@ export const entertaimentService = {
           refId: session.id,
         },
       });
-      return session
+      return session;
+    });
+  },
+
+  async getActive(userId: string) {
+    return prisma.entertainmentSession.findFirst({
+      where: { userId, status: "ACTIVE", expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
+  async expire(sessionId: string, userId: string) {
+    const session = await prisma.entertainmentSession.findFirst({
+      where: { id: sessionId, userId },
+    });
+    if (!session) throw new AppError("Session does not exist!", 404);
+
+    return prisma.entertainmentSession.update({
+      where: { id: sessionId },
+      data: { status: "EXPIRED" },
     });
   },
 };

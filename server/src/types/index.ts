@@ -34,6 +34,6 @@ export const POINTS_MAP: Record<'EASY' | 'MEDIUM' | 'HARD', number> = {
 }
 
 export const COMPLETION_BONUS = 20; // bonus pts when finish 100%
-export const STREAK_MUTIPLIER = 1.2; // X1.2 when streak >= 3
+export const STREAK_MULTIPLIER = 1.2; // X1.2 when streak >= 3
 export const DEBUFF_RATE = 0.8; // -20% if yesterday  < 70%
 export const STREAK_THRESHOLD = 3; // days active buff

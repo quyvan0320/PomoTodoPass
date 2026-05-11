@@ -5,5 +5,6 @@ import { Router } from "express";
 const router = Router();
 
 router.patch("/:id/start", authenticate, taskController.start);
+router.patch("/:id/complete", authenticate, taskController.complete);
 
 export default router;

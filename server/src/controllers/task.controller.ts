@@ -16,4 +16,27 @@ export const taskController = {
       next(error);
     }
   },
+
+  async complete(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { sessionId, actualMinutes } = req.body;
+      if (!sessionId)
+        return res
+          .status(400)
+          .json({ success: false, message: "sessionId is required" });
+      const taskId: string = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const userId = req.user!.id;
+      const result = await taskService.completeTask(
+        taskId,
+        userId,
+        sessionId,
+        actualMinutes,
+      );
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

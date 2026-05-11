@@ -6,6 +6,7 @@ import authRoutes from "@/routes/auth.route";
 import passRoutes from "@/routes/pass.route";
 import taskRoutes from "@/routes/task.route";
 import timepointRoutes from "@/routes/timepoint.route";
+import entertaimentRoutes from "@/routes/entertaiment.route";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -21,6 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/passes", passRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/timepoints", timepointRoutes);
+app.use("/api/entertaiment", entertaimentRoutes);
 
 app.use(errorHandler);
 

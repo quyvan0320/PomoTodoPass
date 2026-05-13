@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/middlewares/errorHandler";
-import { CreateTaskItem, POINTS_MAP, STREAK_THRESHOLD } from "@/types";
+import { CreateTaskItem, POINTS_MAP, STREAK_MULTIPLIER, STREAK_THRESHOLD } from "@/types";
 import { todayUTC, yesterdayUTC } from "@/utils/string.util";
 
 export const passService = {
@@ -28,7 +28,8 @@ export const passService = {
     const debuffActive = yesterdayPass
       ? yesterdayPass.completionRate < 70
       : false;
-    const multiplier = streakCount >= STREAK_THRESHOLD ? STREAK_THRESHOLD : 1.0;
+
+    const multiplier = streakCount >= STREAK_THRESHOLD ? STREAK_MULTIPLIER : 1.0
 
     return prisma.dailyPass.create({
       data: {

@@ -1,9 +1,9 @@
 import type { ArenaTask, DailyPass } from "@/types/Arena";
 import Header from "./Header";
 import Connector from "./Connector";
-import TaskNode from "./Tasknode";
 import FinishNode from "./FinishNode";
 import { motion, AnimatePresence } from "framer-motion";
+import TaskNode from "./TaskNode";
 
 interface ArenaPassProps {
   pass: DailyPass;

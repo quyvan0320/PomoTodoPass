@@ -12,9 +12,7 @@ const LandingScreen = ({ onLogin }: { onLogin: () => void }) => {
           trí.
         </p>
       </div>
-      <Button>
-         Đăng nhập bằng Google
-      </Button>
+      <Button onClick={onLogin}>Đăng nhập bằng Google</Button>
     </div>
   );
 };

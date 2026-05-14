@@ -5,7 +5,8 @@ import { useCompleteTask, useStartTask } from "@/hooks/useTask";
 import { useBalance } from "@/hooks/useTimepoint";
 import type { ArenaTask } from "@/types/Arena";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import PomodoroModal from "@/components/pomodoroModal";
 const Content = () => {
   const { data: me } = useMe();
   const { data: balance } = useBalance();
@@ -70,7 +71,7 @@ const Content = () => {
           PomoTodoPass
         </span>
         <div className="flex items-center gap-4">
-          {/* Điểm hiển thị realtime từ useBalance */}
+          {/* show balance */}
           <div className="flex items-center gap-1.5 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5">
             <span className="text-[#c89b3c] text-sm">⬡</span>
             <span className="text-sm font-bold text-white">
@@ -110,8 +111,7 @@ const Content = () => {
         )}
       </main>
 
-      {/* ── Pomodoro modal (overlay) ── */}
-      {/* <AnimatePresence>
+      <AnimatePresence>
         {pomodoroState && (
           <PomodoroModal
             task={pomodoroState.task}
@@ -120,7 +120,7 @@ const Content = () => {
             isCompleting={completeTask.isPending}
           />
         )}
-      </AnimatePresence> */}
+      </AnimatePresence>
     </div>
   );
 };

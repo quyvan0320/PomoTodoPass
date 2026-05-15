@@ -7,6 +7,7 @@ import type { ArenaTask } from "@/types/Arena";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import PomodoroModal from "@/components/pomodoroModal";
+import CommitmentPopup from "@/components/commitmentPopup";
 const Content = () => {
   const { data: me } = useMe();
   const { data: balance } = useBalance();
@@ -35,7 +36,7 @@ const Content = () => {
       console.error("Start task failed:", err);
     }
   };
-
+const [showCreatePass, setShowCreatePass] = useState(false)
   const handlePomodoroComplete = async (actualMinutes: number) => {
     if (!pomodoroState) return;
     try {
@@ -110,6 +111,12 @@ const Content = () => {
           </motion.div>
         )}
       </main>
+
+      {pass === null && !showCreatePass && (
+        <CommitmentPopup
+          onConfirm={() => setShowCreatePass(true)}
+        />
+      )}
 
       <AnimatePresence>
         {pomodoroState && (

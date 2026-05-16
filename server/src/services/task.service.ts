@@ -39,45 +39,6 @@ export const taskService = {
     return { task: updatedTask, session };
   },
 
-  //   streak logic
-  async updateStreak(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { streakCount: true, lastActiveDate: true },
-    });
-    if (!user) return;
-
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-
-    let newStreak = 1;
-    if (user.lastActiveDate) {
-      const last = new Date(user.lastActiveDate);
-      last.setUTCHours(0, 0, 0, 0);
-      const diffDays = Math.round(
-        (today.getTime() - last.getTime()) / 86_400_000,
-      );
-      if (diffDays === 0) return;
-      if (diffDays === 1) newStreak = user.streakCount + 1;
-    }
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { streakCount: newStreak, lastActiveDate: today },
-    });
-
-    if (newStreak % STREAK_THRESHOLD === 0) {
-      await prisma.timepointLog.create({
-        data: {
-          userId,
-          amount: 0,
-          type: "STREAK_BONUS",
-          description: `${newStreak} consecutive days! Get your points tomorrow ×${STREAK_MULTIPLIER}!`,
-        },
-      });
-    }
-  },
-
   async completeTask(
     taskId: string,
     userId: string,
@@ -89,7 +50,7 @@ export const taskService = {
     if (task.status === "DONE") throw new AppError("Task completed", 400);
 
     const pass = task.pass;
-    let points = Math.round(task.basePoints + pass.multiplier);
+    let points = Math.round(task.basePoints * pass.multiplier);
     if (pass.debuffActive) points = Math.round(points * DEBUFF_RATE);
 
     return prisma.$transaction(async (tx) => {
@@ -114,7 +75,7 @@ export const taskService = {
           userId,
           amount: points,
           type: "TASK_COMPLETE",
-          description: `Complete: ${task.title}`,
+          description: `✅ Hoàn thành: ${task.title}`,
           refId: taskId,
         },
       });
@@ -124,7 +85,6 @@ export const taskService = {
       ).length;
       const completionRate = Math.round((doneTasks / pass.tasks.length) * 100);
       const isAllDone = doneTasks === pass.tasks.length;
-
       // completion bonus 100%
       let bonusPoints = 0;
       if (isAllDone && !pass.bonusGranted) {
@@ -139,7 +99,7 @@ export const taskService = {
             userId,
             amount: bonusPoints,
             type: "COMPLETION_BONUS",
-            description: "Complete 100% of your task today!",
+            description: "🎉 Hoàn thành 100% công việc hôm nay!",
             refId: pass.id,
           },
         });
@@ -153,8 +113,6 @@ export const taskService = {
         },
       });
 
-      await taskService.updateStreak(userId);
-
       return {
         pointsEarned: points,
         bonusPoints,
@@ -164,14 +122,19 @@ export const taskService = {
     });
   },
 
-   async updateTask(
+  async updateTask(
     taskId: string,
     userId: string,
-    data: { title?: string; difficulty?: "EASY" | "MEDIUM" | "HARD"; order?: number }
+    data: {
+      title?: string;
+      difficulty?: "EASY" | "MEDIUM" | "HARD";
+      order?: number;
+    },
   ) {
     const task = await taskService.getOwnedTask(taskId, userId);
-    if (task.status !== "PENDING") throw new AppError("Chỉ sửa được task PENDING", 400);
- 
+    if (task.status !== "PENDING")
+      throw new AppError("Chỉ sửa được task PENDING", 400);
+
     return prisma.task.update({
       where: { id: taskId },
       data: {
@@ -184,11 +147,11 @@ export const taskService = {
       },
     });
   },
- 
-  // ─── Xóa task ──────────────────────────────────────────────────────────────
+
   async deleteTask(taskId: string, userId: string) {
     const task = await taskService.getOwnedTask(taskId, userId);
-    if (task.status !== "PENDING") throw new AppError("Chỉ xóa được task PENDING", 400);
+    if (task.status !== "PENDING")
+      throw new AppError("Chỉ xóa được task PENDING", 400);
     await prisma.task.delete({ where: { id: taskId } });
   },
 };

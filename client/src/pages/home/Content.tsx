@@ -8,23 +8,48 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import PomodoroModal from "@/components/pomodoroModal";
 import CommitmentPopup from "@/components/commitmentPopup";
+import CreatePassModal from "@/components/createPassModal";
+import { useGoogleLogin } from "@/hooks/useGoogleLogin";
+import { useToast } from "@/contexts/ToastContext";
 const Content = () => {
+  const { logout } = useGoogleLogin();
   const { data: me } = useMe();
   const { data: balance } = useBalance();
-  const {
-    data: pass,
-    isLoading: passLoading,
-    isError: passError,
-  } = useTodayPass();
+  const toast = useToast();
+  const { data: pass, isLoading, isError, refetch } = useTodayPass();
 
   const createPass = useCreatePass();
   const startTask = useStartTask();
   const completeTask = useCompleteTask();
+
+  // Điều khiển flow các modal
+  const [showCreatePass, setShowCreatePass] = useState(false);
   const [pomodoroState, setPomodoroState] = useState<{
     task: ArenaTask;
     sessionId: string;
   } | null>(null);
 
+  // Tạo pass → gọi API → cache tự update → ArenaPass hiện ra
+  const handleCreatePass = async (
+    tasks: {
+      title: string;
+      difficulty: "EASY" | "MEDIUM" | "HARD";
+      estimatedMinutes?: number;
+    }[],
+  ) => {
+    try {
+      await createPass.mutateAsync({ tasks });
+      setShowCreatePass(false);
+      toast.success("Trận chiến hôm nay bắt đầu! ⚔");
+    } catch (err: any) {
+      if (err?.response?.status === 409) {
+        refetch();
+        setShowCreatePass(false);
+      } else toast.error(err?.response?.data?.message ?? "Tạo pass thất bại");
+    }
+  };
+
+  // Click task trên Arena → gọi /start → mở Pomodoro
   const handleTaskClick = async (task: ArenaTask) => {
     try {
       const { session } = await startTask.mutateAsync({
@@ -32,11 +57,12 @@ const Content = () => {
         durationMinutes: 50,
       });
       setPomodoroState({ task, sessionId: session.id });
-    } catch (err) {
-      console.error("Start task failed:", err);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Không thể bắt đầu task");
     }
   };
-const [showCreatePass, setShowCreatePass] = useState(false)
+
+  // Pomodoro xong → gọi /complete → cache tự update điểm
   const handlePomodoroComplete = async (actualMinutes: number) => {
     if (!pomodoroState) return;
     try {
@@ -46,24 +72,26 @@ const [showCreatePass, setShowCreatePass] = useState(false)
         actualMinutes,
       });
       setPomodoroState(null);
-      console.log(`+${result.pointsEarned} điểm! Tổng: ${result.newTotal}`);
-    } catch (err) {
-      console.error("Complete task failed:", err);
+      toast.success(`+${result.pointsEarned} pts! Tổng: ${result.newTotal} ⬡`);
+      if (result.bonusPoints > 0) {
+        setTimeout(
+          () =>
+            toast.info(`🎉 Bonus +${result.bonusPoints} pts hoàn thành 100%!`),
+          500,
+        );
+      }
+    } catch (err: any) {
+            toast.error(err?.response?.data?.message ?? 'Lỗi hoàn thành task')
+
     }
   };
-  console.log(pass);
-  if (passError)
-    return (
-      <div className="flex items-center justify-center h-48 text-white/40 text-sm">
-        Không tải được dữ liệu.{" "}
-        <button
-          className="ml-2 underline"
-          onClick={() => window.location.reload()}
-        >
-          Thử lại
-        </button>
-      </div>
-    );
+
+    if (isError) return (
+    <div className="min-h-screen bg-[#080a0f] flex flex-col items-center justify-center gap-3">
+      <p className="text-white/40 text-sm">Không tải được dữ liệu</p>
+      <button onClick={() => refetch()} className="text-[#c89b3c] text-sm underline">Thử lại</button>
+    </div>
+  )
   return (
     <div className="min-h-screen bg-[#080a0f] text-white">
       {/* ── Top navbar ── */}
@@ -96,6 +124,14 @@ const [showCreatePass, setShowCreatePass] = useState(false)
               className="w-8 h-8 rounded-full border border-white/10"
             />
           )}
+
+          <button
+            onClick={logout}
+            className="text-[11px] text-white/30 hover:text-white/60 border border-white/[0.07] hover:border-white/20 rounded-lg px-3 py-1.5 transition-all"
+            style={{ background: "rgba(255,255,255,0.03)" }}
+          >
+            Đăng xuất
+          </button>
         </div>
       </nav>
 
@@ -113,8 +149,14 @@ const [showCreatePass, setShowCreatePass] = useState(false)
       </main>
 
       {pass === null && !showCreatePass && (
-        <CommitmentPopup
-          onConfirm={() => setShowCreatePass(true)}
+        <CommitmentPopup onConfirm={() => setShowCreatePass(true)} />
+      )}
+
+      {pass === null && showCreatePass && (
+        <CreatePassModal
+          onConfirm={handleCreatePass}
+          onClose={() => setShowCreatePass(false)}
+          isLoading={createPass.isPending}
         />
       )}
 
